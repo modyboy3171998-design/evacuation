@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>متابعة الإخلاء المدرسي</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--ink:#10233f;--ink2:#34495e;--line:#d7dee8;--bg:#eef2f6;--card:#fff;--sig:#f59e0b;--ok:#15803d;--okb:#dcfce7;--bad:#b91c1c;--badb:#fee2e2;--mut:#64748b;--mutb:#e5e9ef}
+*{box-sizing:border-box;margin:0}
+body{font-family:'Tajawal',Tahoma,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+button,input{font:inherit}
+button{cursor:pointer;border:0;border-radius:10px;padding:.65rem 1rem;font-weight:700;color:#fff;background:var(--ink)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--sig);outline-offset:2px}
+.hide{display:none!important}
+header{background:var(--ink);color:#fff;padding:.9rem 1rem;display:flex;justify-content:space-between;align-items:center;gap:.7rem;flex-wrap:wrap;border-bottom:5px solid var(--sig)}
+header h1{font-size:1.15rem;font-weight:800}
+header p{font-size:.8rem;color:#b8c7dc}
+.tools{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.pill{border-radius:99px;padding:.3rem .8rem;font-size:.78rem;font-weight:700;background:#f59e0b;color:#10233f;cursor:pointer}
+.pill.ok{background:#86efac}.pill.err{background:#fca5a5}
+.ghost{background:#ffffff22}
+main{max-width:1100px;margin:0 auto;padding:1.2rem 1rem 3rem}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:1.2rem}
+.login{max-width:380px;margin:2.5rem auto}
+.login h2{margin-bottom:1rem}
+label{display:block;font-weight:700;margin:.8rem 0 .3rem}
+input[type=text],input[type=password]{width:100%;padding:.7rem .8rem;border:1px solid var(--line);border-radius:10px;background:#f8fafc}
+.full{width:100%;margin-top:1.1rem;padding:.8rem}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:.7rem;flex-wrap:wrap;margin-bottom:1rem}
+.bar h2{font-size:1.3rem}
+.go{background:var(--ok)}.stop{background:var(--bad)}.sec{background:#2563eb}.warn{background:#fff;color:var(--bad);border:1px solid var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem;margin-bottom:1rem}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:.8rem;text-align:center}
+.stat b{display:block;font-size:1.9rem;line-height:1.2}
+.stat span{font-size:.85rem;color:var(--mut)}
+.notice{background:#fff7e0;border:1px solid var(--sig);border-radius:12px;padding:.8rem 1rem;margin-bottom:1rem;font-size:.92rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.8rem}
+.cls{border:1px solid var(--line);border-radius:12px;padding:.8rem;background:#fff}
+.cls.done{border-color:var(--ok)}.cls.missing{border-color:var(--bad)}
+.cls h3{font-size:1rem;display:flex;justify-content:space-between}
+.meter{display:flex;height:9px;border-radius:9px;overflow:hidden;background:var(--mutb);margin:.55rem 0}
+.meter i{display:block}.mp{background:var(--ok)}.ma{background:var(--bad)}
+.nums{font-size:.82rem;color:var(--ink2);display:flex;gap:.7rem;flex-wrap:wrap}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}
+.ab{padding:.4rem .6rem;border-radius:8px;background:var(--badb);margin-top:.3rem;display:flex;justify-content:space-between;font-size:.9rem}
+.empty{color:var(--mut);text-align:center;padding:1.5rem}
+.t{max-width:640px;margin:0 auto}
+.alert{background:var(--bad);color:#fff;border-radius:12px;padding:.8rem 1rem;margin-bottom:.8rem;display:flex;justify-content:space-between;gap:.5rem;font-weight:800}
+.row{display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.65rem .8rem;border-bottom:1px solid var(--line)}
+.row:last-child{border:0}
+.row .b{display:flex;gap:.4rem}
+.row .b button{width:76px;background:var(--mutb);color:var(--ink2)}
+.row .b .p.on{background:var(--ok);color:#fff}.row .b .a.on{background:var(--bad);color:#fff}
+.wait{text-align:center;padding:3rem 1rem}
+.wait h2{margin-bottom:.4rem}
+dialog{border:0;border-radius:16px;padding:1.3rem;width:min(520px,94vw);direction:rtl;font-family:inherit}
+dialog::backdrop{background:#10233f88}
+dialog small{color:var(--mut);display:block;margin-top:.5rem;line-height:1.6}
+.opts{display:flex;gap:1rem;margin:.4rem 0}.opts label{margin:0;font-weight:500}
+#res{margin-top:.8rem;padding:.7rem;border-radius:10px;font-size:.9rem;line-height:1.6}
+#res.ok{background:var(--okb)}#res.err{background:var(--badb)}
+pre{direction:ltr;background:#f1f5f9;padding:.6rem;border-radius:8px;font-size:.75rem;overflow:auto;margin-top:.4rem}
+#toast{position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:.7rem 1.1rem;border-radius:10px;z-index:99;max-width:92vw;font-weight:700}
+#toast.err{background:var(--bad)}
+@media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>مدرسة الإمام سعيد بن عبدالله للبنين (5-10)</h1><p>نظام متابعة الإخلاء المدرسي</p></div>
+  <div class="tools">
+    <span id="pill" class="pill" title="حالة التخزين">محلي</span>
+    <button id="gear" class="ghost hide" onclick="openSettings()">إعدادات التخزين</button>
+    <button id="out" class="ghost hide" onclick="logout()">خروج</button>
+    <span id="badge" class="pill hide" style="background:#2563eb;color:#fff;cursor:default"></span>
+  </div>
+</header>
+
+<main>
+  <!-- الدخول -->
+  <section id="login" class="box login hide">
+    <h2>تسجيل الدخول</h2>
+    <form onsubmit="doLogin(event)">
+      <label for="u">اسم المستخدم</label><input id="u" type="text" autocomplete="username" placeholder="admin أو t51" required>
+      <label for="p">كلمة المرور</label><input id="p" type="password" autocomplete="current-password" required>
+      <button class="full" type="submit">دخول</button>
+    </form>
+  </section>
+
+  <!-- المشرف -->
+  <section id="admin" class="hide">
+    <div class="bar">
+      <h2>لوحة المتابعة</h2>
+      <div class="tools">
+        <label class="sec" style="margin:0;padding:.65rem 1rem;border-radius:10px;color:#fff;cursor:pointer">استيراد الإكسل<input type="file" accept=".xlsx,.xls" class="hide" onchange="importExcel(event)"></label>
+        <button id="evac" onclick="toggleEvac()">بدء الإخلاء</button>
+        <button class="warn" onclick="clearAll()">تصفير النظام</button>
+      </div>
+    </div>
+    <div id="localNote" class="notice hide">أنت في الوضع المحلي: البيانات محفوظة على هذا الجهاز فقط ولن تظهر عند المعلمين على أجهزتهم. للمزامنة بين الأجهزة افتح «إعدادات التخزين» وفعّل الوضع السحابي.</div>
+    <div class="stats">
+      <div class="stat"><b id="sT">0</b><span>إجمالي الطلبة</span></div>
+      <div class="stat"><b id="sP" style="color:var(--ok)">0</b><span>حاضر</span></div>
+      <div class="stat"><b id="sA" style="color:var(--bad)">0</b><span>غائب</span></div>
+      <div class="stat"><b id="sN" style="color:var(--mut)">0</b><span>لم يُحدد</span></div>
+    </div>
+    <div class="box"><h3 style="margin-bottom:.7rem">حالة الصفوف</h3><div id="grid" class="grid"></div></div>
+    <div class="box" style="margin-top:1rem"><h3>الغائبون</h3><div id="absent"></div></div>
+  </section>
+
+  <!-- المعلم -->
+  <section id="teacher" class="t hide">
+    <div id="wait" class="box wait hide"><h2>لا يوجد إخلاء نشط</h2><p>أنت مكلف بالصف <b id="myCls"></b>. ستظهر القائمة تلقائياً عند بدء الإخلاء.</p></div>
+    <div id="live" class="hide">
+      <div class="alert"><span>طوارئ: احصر طلبة صفك</span><span id="liveTitle"></span></div>
+      <div class="bar" style="margin-bottom:.7rem">
+        <button class="go" style="flex:1" onclick="allPresent()">حضور الكل</button>
+        <button class="sec" style="flex:1" onclick="submitSheet()">اعتماد الكشف</button>
+      </div>
+      <div class="box" style="padding:0"><div id="list"></div></div>
+    </div>
+  </section>
+</main>
+
+<dialog id="dlg">
+  <h3>إعدادات التخزين</h3>
+  <div class="opts">
+    <label><input type="radio" name="mode" value="local"> محلي (هذا الجهاز)</label>
+    <label><input type="radio" name="mode" value="cloud"> سحابي (Firebase)</label>
+  </div>
+  <div id="cloudFields">
+    <label for="fk">apiKey</label><input id="fk" type="text" dir="ltr">
+    <label for="fp">projectId</label><input id="fp" type="text" dir="ltr">
+    <small>في Firebase Console: أنشئ Firestore Database بوضع Native، ثم Rules والصق القواعد التالية واضغط Publish:</small>
+<pre>rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} { allow read, write: if true; }
+  }
+}</pre>
+    <small>القواعد مفتوحة وتناسب التجربة. بعد التحويل للسحابي استورد ملف الإكسل مرة أخرى.</small>
+  </div>
+  <div id="res" class="hide"></div>
+  <div class="tools" style="margin-top:1rem">
+    <button class="go" onclick="saveSettings()">حفظ</button>
+    <button class="sec" onclick="testConn()">اختبار الاتصال</button>
+    <button class="ghost" style="background:#e5e9ef;color:#10233f" onclick="dlg.close()">إغلاق</button>
+  </div>
+</dialog>
+<div id="toast" class="hide"></div>
+
+<script>
+// ضع بيانات Firebase هنا إن أردت تفعيل السحابة تلقائياً على كل الأجهزة
+const DEFAULT_CLOUD = { apiKey: '', projectId: '' };
+
+const CFG_KEY = 'evac2_cfg', LOCAL_KEY = 'evac2_data', USER_KEY = 'evac2_user';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// الحسابات الثابتة (اسم الدخول = كلمة المرور)
+const USERS = {
+  'admin': { role: 'admin',   pass: 'admin' },
+  't51':   { role: 'teacher', pass: 't51',  grade: '5',  section: '1' },
+  't52':   { role: 'teacher', pass: 't52',  grade: '5',  section: '2' },
+  't61':   { role: 'teacher', pass: 't61',  grade: '6',  section: '1' },
+  't62':   { role: 'teacher', pass: 't62',  grade: '6',  section: '2' },
+  't71':   { role: 'teacher', pass: 't71',  grade: '7',  section: '1' },
+  't72':   { role: 'teacher', pass: 't72',  grade: '7',  section: '2' },
+  't81':   { role: 'teacher', pass: 't81',  grade: '8',  section: '1' },
+  't82':   { role: 'teacher', pass: 't82',  grade: '8',  section: '2' },
+  't91':   { role: 'teacher', pass: 't91',  grade: '9',  section: '1' },
+  't92':   { role: 'teacher', pass: 't92',  grade: '9',  section: '2' },
+  't101':  { role: 'teacher', pass: 't101', grade: '10', section: '1' },
+  't102':  { role: 'teacher', pass: 't102', grade: '10', section: '2' }
+};
+
+let cfg, data = { classes: {}, active: false }, user = null, busy = 0, timer = null, connMsg = '';
+
+function loadCfg() {
+  let c = {};
+  try { c = JSON.parse(localStorage.getItem(CFG_KEY) || '{}'); } catch (e) {}
+  if (DEFAULT_CLOUD.apiKey && DEFAULT_CLOUD.projectId) return { mode: 'cloud', apiKey: DEFAULT_CLOUD.apiKey, projectId: DEFAULT_CLOUD.projectId };
+  const ok = c.mode === 'cloud' && c.apiKey && c.projectId;
+  return { mode: ok ? 'cloud' : 'local', apiKey: c.apiKey || '', projectId: c.projectId || '' };
+}
+
+// ---------- التخزين المحلي ----------
+const local = {
+  get() { try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || { classes: {}, active: false }; } catch (e) { return { classes: {}, active: false }; } },
+  put(d) { localStorage.setItem(LOCAL_KEY, JSON.stringify(d)); },
+  async load() { return this.get(); },
+  async saveClass(k, a) { const d = this.get(); d.classes[k] = a; this.put(d); },
+  async delClass(k) { const d = this.get(); delete d.classes[k]; this.put(d); },
+  async setActive(v) { const d = this.get(); d.active = v; this.put(d); }
+};
+
+// ---------- التخزين السحابي (Firestore عبر REST، بدون مكتبة Firebase) ----------
+function httpErr(s, j) {
+  const e = (j && j.error) || {}, m = e.message || '';
+  let t, doc = false;
+  if (s === 404 && /database/i.test(m)) t = 'قاعدة Firestore غير موجودة. أنشئها من Firestore Database ← Create database (Native)، وتأكد من projectId.';
+  else if (s === 404) { t = 'المستند غير موجود'; doc = true; }
+  else if (s === 403 && /not been used|disabled/i.test(m)) t = 'واجهة Cloud Firestore API معطّلة. فعّلها من Google Cloud Console.';
+  else if (s === 403) t = 'قواعد Rules ترفض الوصول. الصق القواعد المفتوحة ثم Publish.';
+  else if (s === 400) t = 'apiKey أو projectId غير صحيح.';
+  else if (s === 429) t = 'تجاوزت حد الاستخدام المجاني.';
+  else t = 'خطأ من الخادم (' + s + ') ' + m;
+  const er = new Error(t); er.doc = doc; return er;
+}
+
+async function api(path, method = 'GET', body) {
+  const base = 'https://firestore.googleapis.com/v1/projects/' + encodeURIComponent(cfg.projectId) + '/databases/(default)/documents/';
+  const url = base + path + (path.includes('?') ? '&' : '?') + 'key=' + encodeURIComponent(cfg.apiKey);
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 12000);
+  const opts = { method, signal: ctl.signal };
+  if (body) { opts.body = JSON.stringify(body); opts.headers = { 'Content-Type': 'application/json' }; }
+  try {
+    const r = await fetch(url, opts);
+    const j = r.status === 204 ? {} : await r.json().catch(() => ({}));
+    if (!r.ok) throw httpErr(r.status, j);
+    return j;
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error('انتهت مهلة الاتصال. تحقق من الإنترنت.');
+    if (e instanceof TypeError) throw new Error('تعذر الوصول إلى خوادم Google. الإنترنت منقطع أو الشبكة تحجبها، جرّب بيانات الجوال.');
+    throw e;
+  } finally { clearTimeout(t); }
+}
+
+const parseDoc = d => JSON.parse(d.fields.json.stringValue);
+const cloud = {
+  async load(k) {
+    let classes = data.classes, active = false;
+    if (!k) {
+      const c = await api('classes?pageSize=200');
+      classes = {};
+      (c.documents || []).forEach(d => { try { classes[d.name.split('/').pop()] = parseDoc(d); } catch (e) {} });
+    }
+    try { const s = await api('meta/state'); active = !!(s.fields && s.fields.active && s.fields.active.booleanValue); }
+    catch (e) { if (!e.doc) throw e; }
+    if (k && active) {
+      try { classes = { ...classes, [k]: parseDoc(await api('classes/' + k)) }; } catch (e) { if (!e.doc) throw e; }
+    }
+    return { classes, active };
+  },
+  saveClass: (k, a) => api('classes/' + k, 'PATCH', { fields: { json: { stringValue: JSON.stringify(a) } } }),
+  delClass: k => api('classes/' + k, 'DELETE'),
+  setActive: v => api('meta/state', 'PATCH', { fields: { active: { booleanValue: v } } })
+};
+const S = () => cfg.mode === 'cloud' ? cloud : local;
+
+// ---------- حالة الاتصال ----------
+function setConn(ok, msg) {
+  const p = $('pill'); connMsg = msg || '';
+  if (cfg.mode === 'local') { p.className = 'pill'; p.textContent = 'محلي - هذا الجهاز فقط'; }
+  else if (ok) { p.className = 'pill ok'; p.textContent = 'سحابي - متصل'; }
+  else { p.className = 'pill err'; p.textContent = 'سحابي - غير متصل (اضغط)'; }
+}
+$('pill').onclick = () => { if (connMsg) alert(connMsg); };
+
+function toast(m, type) {
+  const t = $('toast'); t.textContent = m; t.className = type === 'err' ? 'err' : '';
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.add('hide'), 4500);
+}
+
+async function write(fn) {
+  busy++;
+  try { await fn(); setConn(true); return true; }
+  catch (e) { setConn(false, e.message); toast(e.message, 'err'); return false; }
+  finally { busy--; }
+}
+
+const myKey = () => user.grade + '_' + user.section;
+
+async function refresh() {
+  if (busy || document.hidden) return;
+  try { data = await S().load(user && user.role === 'teacher' ? myKey() : null); setConn(true); }
+  catch (e) { setConn(false, e.message); }
+  render();
+}
+
+function startPolling() {
+  clearInterval(timer);
+  if (cfg.mode === 'cloud') timer = setInterval(refresh, 5000);
+}
+window.addEventListener('storage', e => { if (e.key === LOCAL_KEY && cfg.mode === 'local') refresh(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+
+// ---------- الدخول ----------
+function doLogin(e) {
+  e.preventDefault();
+  const u = $('u').value.trim().toLowerCase(), p = $('p').value.trim();
+  if (USERS[u] && USERS[u].pass === p) { user = { username: u, ...USERS[u] }; localStorage.setItem(USER_KEY, u); enter(); }
+  else toast('بيانات الدخول غير صحيحة', 'err');
+}
+function logout() { localStorage.removeItem(USER_KEY); user = null; $('u').value = ''; $('p').value = ''; enter(); }
+
+function enter() {
+  const inn = !!user;
+  $('login').classList.toggle('hide', inn);
+  $('out').classList.toggle('hide', !inn);
+  $('badge').classList.toggle('hide', !inn);
+  $('gear').classList.toggle('hide', !(inn && user.role === 'admin'));
+  $('admin').classList.toggle('hide', !(inn && user.role === 'admin'));
+  $('teacher').classList.toggle('hide', !(inn && user.role === 'teacher'));
+  if (inn) $('badge').textContent = user.role === 'admin' ? 'المدير' : 'الصف ' + user.grade + '/' + user.section;
+  if (inn) refresh();
+}
+
+// ---------- العرض ----------
+function render() {
+  if (!user) return;
+  if (user.role === 'admin') renderAdmin(); else renderTeacher();
+}
+
+function renderAdmin() {
+  const keys = Object.keys(data.classes).sort((a, b) => { const [g1, s1] = a.split('_'), [g2, s2] = b.split('_'); return g1 - g2 || s1 - s2; });
+  let T = 0, P = 0, A = 0, abs = '';
+  const cards = keys.map(k => {
+    const arr = data.classes[k], [g, s] = k.split('_');
+    const p = arr.filter(x => x.s === 'p').length, a = arr.filter(x => x.s === 'a').length, n = arr.length - p - a;
+    T += arr.length; P += p; A += a;
+    arr.forEach(x => { if (x.s === 'a') abs += '<div class="ab"><b>' + esc(x.n) + '</b><span>' + g + '/' + s + '</span></div>'; });
+    const cl = n === 0 ? 'done' : (data.active && p + a === 0 ? 'missing' : '');
+    const w = v => arr.length ? (v / arr.length * 100) : 0;
+    return '<div class="cls ' + cl + '"><h3><span>الصف ' + g + '/' + s + '</span><span>' + arr.length + '</span></h3>' +
+      '<div class="meter"><i class="mp" style="width:' + w(p) + '%"></i><i class="ma" style="width:' + w(a) + '%"></i></div>' +
+      '<div class="nums"><span>حاضر ' + p + '</span><span>غائب ' + a + '</span><span>باقي ' + n + '</span></div></div>';
+  });
+  $('sT').textContent = T; $('sP').textContent = P; $('sA').textContent = A; $('sN').textContent = T - P - A;
+  $('grid').innerHTML = cards.join('') || '<div class="empty">لا توجد بيانات. استورد ملف الإكسل للبدء.</div>';
+  $('absent').innerHTML = abs || '<div class="empty">لا يوجد غائبون</div>';
+  const b = $('evac');
+  b.textContent = data.active ? 'إنهاء الإخلاء' : 'بدء الإخلاء';
+  b.className = data.active ? 'stop' : 'go';
+  $('localNote').classList.toggle('hide', cfg.mode !== 'local');
+}
+
+function renderTeacher() {
+  $('myCls').textContent = user.grade + '/' + user.section;
+  $('wait').classList.toggle('hide', data.active);
+  $('live').classList.toggle('hide', !data.active);
+  if (!data.active) return;
+  $('liveTitle').textContent = 'صف ' + user.grade + ' / شعبة ' + user.section;
+  const arr = data.classes[myKey()] || [];
+  $('list').innerHTML = arr.length ? arr.map((x, i) =>
+    '<div class="row"><b>' + esc(x.n) + '</b><div class="b">' +
+    '<button class="p ' + (x.s === 'p' ? 'on' : '') + '" data-i="' + i + '" data-s="p">حاضر</button>' +
+    '<button class="a ' + (x.s === 'a' ? 'on' : '') + '" data-i="' + i + '" data-s="a">غائب</button></div></div>').join('')
+    : '<div class="empty">لا يوجد طلبة مسجلون في هذه الشعبة</div>';
+}
+
+$('list').addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const k = myKey(), arr = data.classes[k]; arr[b.dataset.i].s = b.dataset.s;
+  renderTeacher();
+  await write(() => S().saveClass(k, arr));
+});
+
+async function allPresent() {
+  const k = myKey(), arr = data.classes[k] || [];
+  if (!arr.length || !confirm('تسجيل جميع الطلبة كحاضرين؟')) return;
+  arr.forEach(x => x.s = 'p'); renderTeacher();
+  await write(() => S().saveClass(k, arr));
+}
+
+function submitSheet() {
+  const arr = data.classes[myKey()] || [], n = arr.filter(x => !x.s).length;
+  if (n) toast('يوجد ' + n + ' طالب لم تُحدد حالتهم بعد', 'err');
+  else toast('تم اعتماد الكشف. المشرف يراه الآن.');
+}
+
+// ---------- أدوات المشرف ----------
+async function toggleEvac() {
+  if (data.active) {
+    if (!confirm('إنهاء الإخلاء؟')) return;
+    await write(() => S().setActive(false));
+  } else {
+    const keys = Object.keys(data.classes);
+    if (!keys.length) return toast('استورد الطلبة أولاً', 'err');
+    await write(async () => {
+      keys.forEach(k => data.classes[k].forEach(x => x.s = ''));
+      await Promise.all(keys.map(k => S().saveClass(k, data.classes[k])));
+      await S().setActive(true);
+    });
+  }
+  busy = 0; await refresh();
+}
+
+async function clearAll() {
+  if (!confirm('سيتم حذف جميع الطلبة. هل أنت متأكد؟')) return;
+  await write(async () => {
+    await Promise.all(Object.keys(data.classes).map(k => S().delClass(k)));
+    await S().setActive(false);
+  });
+  await refresh();
+}
+
+function importExcel(ev) {
+  const input = ev.target, file = input.files[0]; if (!file) return;
+  const rd = new FileReader();
+  rd.onload = async e => {
+    try {
+      if (typeof XLSX === 'undefined') throw new Error('تعذر تحميل مكتبة الإكسل. تحقق من الإنترنت.');
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+      const words = { 'خامس': 5, 'سادس': 6, 'سابع': 7, 'ثامن': 8, 'تاسع': 9, 'عاشر': 10, 'أول': 1, 'اول': 1, 'ثاني': 2, 'ثالث': 3 };
+      const num = v => {
+        const s = String(v).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)), d = s.replace(/[^0-9]/g, '');
+        if (d) return parseInt(d, 10);
+        for (const w in words) if (s.includes(w)) return words[w];
+        return 0;
+      };
+      const pick = (r, ks) => { for (const k of ks) if (r[k] !== undefined && r[k] !== '') return r[k]; return ''; };
+      const classes = {};
+      rows.forEach(r => {
+        const n = String(pick(r, ['اسم الطالب', 'الاسم', 'اسم', 'Name'])).trim();
+        const g = num(pick(r, ['الصف', 'الصفوف', 'صف', 'Grade'])), s = num(pick(r, ['الشعبة', 'شعبة', 'Section']));
+        if (!n || !g || !s) return;
+        const k = g + '_' + s; classes[k] = classes[k] || [];
+        if (!classes[k].some(x => x.n === n)) classes[k].push({ n, s: '' });
+      });
+      const keys = Object.keys(classes);
+      if (!keys.length) return toast('لم أجد بيانات. الأعمدة المطلوبة: اسم الطالب، الصف، الشعبة', 'err');
+      toast('جاري الحفظ...');
+      const ok = await write(() => Promise.all(keys.map(k => S().saveClass(k, classes[k]))));
+      if (ok) { toast('تم استيراد ' + keys.reduce((a, k) => a + classes[k].length, 0) + ' طالب'); await refresh(); }
+    } catch (err) { toast(err.message || 'تعذر قراءة الملف', 'err'); }
+    input.value = '';
+  };
+  rd.readAsArrayBuffer(file);
+}
+
+// ---------- الإعدادات ----------
+const dlg = $('dlg');
+function openSettings() {
+  document.querySelector('input[name=mode][value=' + cfg.mode + ']').checked = true;
+  $('fk').value = cfg.apiKey; $('fp').value = cfg.projectId;
+  $('res').className = 'hide'; syncFields(); dlg.showModal();
+}
+function syncFields() { $('cloudFields').classList.toggle('hide', document.querySelector('input[name=mode]:checked').value !== 'cloud'); }
+document.querySelectorAll('input[name=mode]').forEach(r => r.onchange = syncFields);
+function show(t, ok) { const r = $('res'); r.textContent = t; r.className = ok ? 'ok' : 'err'; }
+
+async function testConn() {
+  const old = cfg;
+  cfg = { mode: 'cloud', apiKey: $('fk').value.trim(), projectId: $('fp').value.trim() };
+  try {
+    if (!cfg.apiKey || !cfg.projectId) throw new Error('أدخل apiKey و projectId أولاً.');
+    show('جاري الاختبار...', true);
+    await api('classes?pageSize=1');
+    await api('meta/ping', 'PATCH', { fields: { t: { integerValue: String(Date.now()) } } });
+    show('الاتصال سليم، والقراءة والكتابة مسموحتان.', true);
+  } catch (e) { show(e.message, false); }
+  finally { cfg = old; }
+}
+
+function saveSettings() {
+  const mode = document.querySelector('input[name=mode]:checked').value;
+  const c = { mode, apiKey: $('fk').value.trim(), projectId: $('fp').value.trim() };
+  if (mode === 'cloud' && (!c.apiKey || !c.projectId)) return show('أدخل apiKey و projectId.', false);
+  localStorage.setItem(CFG_KEY, JSON.stringify(c));
+  cfg = loadCfg(); data = { classes: {}, active: false };
+  dlg.close(); setConn(true); startPolling(); refresh();
+}
+
+// ---------- البدء ----------
+cfg = loadCfg();
+setConn(true);
+startPolling();
+const saved = localStorage.getItem(USER_KEY);
+if (saved && USERS[saved]) user = { username: saved, ...USERS[saved] };
+enter();
+</script>
+</body>
+</html>
